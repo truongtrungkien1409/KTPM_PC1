@@ -10,7 +10,8 @@
     <name>Assignment 1 - JUnit 5 Selenium Starter</name>
 
     <properties>
-        <maven.compiler.release>17</maven.compiler.release>
+        <!-- Đã đổi sang JDK 21 -->
+        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.11.4</junit.version>
         <selenium.version>4.27.0</selenium.version>
@@ -34,6 +35,16 @@
 
     <build>
         <plugins>
+            <!-- Thêm plugin biên dịch tối ưu cho Java 21 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>21</release>
+                </configuration>
+            </plugin>
+            <!-- Plugin chạy bộ test JUnit 5 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
