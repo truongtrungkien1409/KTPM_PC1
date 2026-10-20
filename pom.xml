@@ -1,20 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>vn.edu.softwaretesting</groupId>
     <artifactId>assignment1-starter</artifactId>
     <version>1.0.0</version>
     <name>Assignment 1 - JUnit 5 Selenium Starter</name>
-
     <properties>
+        <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.11.4</junit.version>
+        <selenium.version>4.27.0</selenium.version>
         <surefire.version>3.5.2</surefire.version>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -29,7 +25,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -46,7 +41,6 @@
             </plugin>
         </plugins>
     </build>
-
     <profiles>
         <profile>
             <id>default-test-config</id>
