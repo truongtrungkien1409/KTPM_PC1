@@ -3,21 +3,18 @@ package vn.edu.softwaretesting.tests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.Duration;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvFileSource;
-import org.openqa.selenium.By;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import vn.edu.softwaretesting.core.WebTestBase;
+import vn.edu.softwaretesting.pages.CartPage;
 import vn.edu.softwaretesting.pages.CheckoutStepOnePage;
 import vn.edu.softwaretesting.pages.CheckoutStepTwoPage;
+import vn.edu.softwaretesting.pages.InventoryPage;
 import vn.edu.softwaretesting.pages.LoginPage;
 
 @Tag("web")
@@ -31,17 +28,12 @@ class CheckoutTest extends WebTestBase {
         // Bước 1: Đăng nhập vào hệ thống bằng tài khoản tiêu chuẩn
         new LoginPage(driver, baseUrl).open().login("standard_user", "secret_sauce");
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.urlContains("inventory.html"));
-        By addToCartBackpack = By.id("add-to-cart-sauce-labs-backpack");
+        // Bước 2: Thêm sản phẩm vào giỏ hàng và mở giỏ hàng qua Page Object
+        InventoryPage inventoryPage = new InventoryPage(driver, baseUrl).waitForPage();
+        CartPage cartPage = inventoryPage.addToCart("sauce-labs-backpack").openCart();
 
-        // Bước 2: Đảm bảo có ít nhất 1 sản phẩm trong giỏ hàng để kiểm tra
-        if (!driver.findElements(addToCartBackpack).isEmpty()) {
-            wait.until(ExpectedConditions.elementToBeClickable(addToCartBackpack)).click();
-        }
-
-        // Bước 3: Điều hướng trực tiếp đến trang Checkout Step One
-        stepOnePage = new CheckoutStepOnePage(driver, baseUrl).open();
+        // Bước 3: Nhấn checkout để điều hướng đến trang Checkout Step One
+        stepOnePage = cartPage.checkout();
     }
 
     @Test
@@ -63,9 +55,8 @@ class CheckoutTest extends WebTestBase {
         assertTrue(stepTwoPage.isOnStepTwo(), "Không chuyển được sang màn hình xác nhận thanh toán (Step Two)");
 
         stepTwoPage.clickCancel();
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.urlContains("inventory.html"));
-        assertTrue(driver.getCurrentUrl().contains("inventory.html"),
+        InventoryPage inventoryPage = new InventoryPage(driver, baseUrl);
+        assertTrue(inventoryPage.isOnInventory(),
                 "Bấm Cancel ở Step Two nhưng không quay về trang danh sách sản phẩm inventory.html");
     }
 
@@ -73,10 +64,11 @@ class CheckoutTest extends WebTestBase {
     @DisplayName("TC-CHK-UC-03: Huy thanh toan tai man hinh Step One quay ve gio hang cart.html")
     void cancelOnStepOneShouldReturnToCart() {
         stepOnePage.clickCancel();
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.urlContains("cart.html"));
-        assertTrue(driver.getCurrentUrl().contains("cart.html"),
+        CartPage cartPage = new CartPage(driver, baseUrl);
+        assertTrue(cartPage.isOnCart(),
                 "Bấm Cancel ở Step One nhưng không quay về trang giỏ hàng cart.html");
+        assertTrue(cartPage.hasProducts(),
+                "Sau khi bấm Cancel ở Step One, sản phẩm trong giỏ hàng phải còn nguyên");
     }
 
     @Test
@@ -87,11 +79,10 @@ class CheckoutTest extends WebTestBase {
         assertTrue(stepTwoPage.isOrderCompleted(), "Đơn hàng chưa hoàn tất thành công");
 
         stepTwoPage.clickBackHome();
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.urlContains("inventory.html"));
-        assertTrue(driver.getCurrentUrl().contains("inventory.html"),
+        InventoryPage inventoryPage = new InventoryPage(driver, baseUrl);
+        assertTrue(inventoryPage.isOnInventory(),
                 "Bấm Back Home nhưng không quay về trang danh sách sản phẩm inventory.html");
-        assertTrue(driver.findElements(By.className("shopping_cart_badge")).isEmpty(),
+        assertTrue(inventoryPage.isCartEmpty(),
                 "Giỏ hàng chưa được làm rỗng sau khi bấm Back Home");
     }
 
@@ -104,7 +95,11 @@ class CheckoutTest extends WebTestBase {
 
     @ParameterizedTest(name = "{0}: firstName=''{1}'', lastName=''{2}'', postalCode=''{3}''")
     @DisplayName("TC-CHK-DT: Kiem tra cac truong bat buoc form thanh toan theo bang quyet dinh")
-    @CsvFileSource(resources = "/checkout-dt-data.csv", numLinesToSkip = 1)
+    @CsvSource({
+            "TC-CHK-DT-02, '', Doe, 70000, Error: First Name is required",
+            "TC-CHK-DT-03, John, '', 70000, Error: Last Name is required",
+            "TC-CHK-DT-04, John, Doe, '', Error: Postal Code is required"
+    })
     void requiredFieldValidation(
             String testCaseId,
             String firstName,
