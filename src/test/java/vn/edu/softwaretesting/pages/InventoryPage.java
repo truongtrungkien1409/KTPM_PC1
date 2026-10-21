@@ -24,10 +24,16 @@ public final class InventoryPage {
     private final WebDriverWait wait;
     private final String baseUrl;
 
+    // Constructor 1 (Dùng cho code test truyền baseUrl)
     public InventoryPage(WebDriver driver, String baseUrl) {
         this.driver = driver;
         this.baseUrl = baseUrl;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(8));
+    }
+
+    // Constructor 2 bổ sung (Dùng cho mẫu code đề bài chỉ truyền mỗi driver)[cite: 6]
+    public InventoryPage(WebDriver driver) {
+        this(driver, "https://www.saucedemo.com");
     }
 
     public InventoryPage open() {

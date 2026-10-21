@@ -1,5 +1,11 @@
-D:\KTPM\starter-code\src\test\java\vn\edu\softwaretesting\core\WebTestBase.java
-D:\KTPM\starter-code\src\test\java\vn\edu\softwaretesting\pages\InventoryPage.java
-D:\KTPM\starter-code\src\test\java\vn\edu\softwaretesting\pages\LoginPage.java
-D:\KTPM\starter-code\src\test\java\vn\edu\softwaretesting\tests\LoginTest.java
-D:\KTPM\starter-code\src\test\java\vn\edu\softwaretesting\tests\SortTest.java
+F:\KTPM\Assignment1\KTPM_PC1\src\test\java\vn\edu\softwaretesting\core\WebTestBase.java
+F:\KTPM\Assignment1\KTPM_PC1\src\test\java\vn\edu\softwaretesting\pages\CartPage.java
+F:\KTPM\Assignment1\KTPM_PC1\src\test\java\vn\edu\softwaretesting\pages\CheckoutStepOnePage.java
+F:\KTPM\Assignment1\KTPM_PC1\src\test\java\vn\edu\softwaretesting\pages\CheckoutStepTwoPage.java
+F:\KTPM\Assignment1\KTPM_PC1\src\test\java\vn\edu\softwaretesting\pages\InventoryPage.java
+F:\KTPM\Assignment1\KTPM_PC1\src\test\java\vn\edu\softwaretesting\pages\LoginPage.java
+F:\KTPM\Assignment1\KTPM_PC1\src\test\java\vn\edu\softwaretesting\tests\CartTest.java
+F:\KTPM\Assignment1\KTPM_PC1\src\test\java\vn\edu\softwaretesting\tests\CheckoutTest.java
+F:\KTPM\Assignment1\KTPM_PC1\src\test\java\vn\edu\softwaretesting\tests\LoginTest.java
+F:\KTPM\Assignment1\KTPM_PC1\src\test\java\vn\edu\softwaretesting\tests\PerformanceTest.java
+F:\KTPM\Assignment1\KTPM_PC1\src\test\java\vn\edu\softwaretesting\tests\SortTest.java
