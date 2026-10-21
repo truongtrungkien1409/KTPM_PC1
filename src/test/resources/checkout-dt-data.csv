@@ -1,0 +1,4 @@
+testCaseId,firstName,lastName,postalCode,expectedError
+TC-CHK-DT-02,"",Doe,70000,Error: First Name is required
+TC-CHK-DT-03,John,"",70000,Error: Last Name is required
+TC-CHK-DT-04,John,Doe,"",Error: Postal Code is required
