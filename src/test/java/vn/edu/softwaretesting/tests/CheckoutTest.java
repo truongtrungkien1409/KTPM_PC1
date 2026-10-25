@@ -2,7 +2,6 @@ package vn.edu.softwaretesting.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -133,5 +132,47 @@ class CheckoutTest extends WebTestBase {
                 "Thuế thực tế không khớp với công thức tính thuế 8%");
         assertEquals(expectedTotal, actualTotal, 0.01,
                 "Tổng tiền không khớp với công thức Item Total + Tax");
+    }
+
+    @Test
+    @Tag("known-bug")
+    @DisplayName("TC-CHK-BUG-01 [BUG-01]: He thong khong duoc phep cho checkout khi gio hang hoan toan rong")
+    void emptyCartShouldNotAllowCheckout() {
+        // Đăng nhập nhưng không thêm bất kỳ sản phẩm nào vào giỏ hàng
+        new LoginPage(driver, baseUrl).open().login("standard_user", "secret_sauce");
+        InventoryPage inventoryPage = new InventoryPage(driver, baseUrl).waitForPage();
+        inventoryPage.openCart();
+
+        CartPage cartPage = new CartPage(driver, baseUrl);
+        assertTrue(cartPage.isOnCart(), "Chưa ở màn hình giỏ hàng cart.html");
+
+        // Nhấn checkout khi giỏ hàng rỗng
+        cartPage.checkout();
+
+        // Kỳ vọng theo đặc tả: Hệ thống phải chặn và giữ người dùng ở lại cart.html
+        // Thực tế lỗi (BUG-01): Hệ thống vẫn cho chuyển sang checkout-step-one.html và đặt hàng $0.00
+        // Assertion này sẽ fail đúng như thực tế hệ thống có lỗi!
+        assertTrue(cartPage.isOnCart(),
+                "Hệ thống cho phép checkout khi giỏ hàng rỗng, vi phạm logic nghiệp vụ thương mại điện tử");
+    }
+
+    @Test
+    @Tag("known-bug")
+    @DisplayName("TC-CHK-BUG-02 [BUG-02]: problem_user khong the nhap duoc Last Name tai man hinh checkout")
+    void problemUserCannotEnterLastName() {
+        // Đăng nhập bằng problem_user, thêm hàng và chuyển sang checkout
+        new LoginPage(driver, baseUrl).open().login("problem_user", "secret_sauce");
+        InventoryPage inventoryPage = new InventoryPage(driver, baseUrl).waitForPage();
+        CartPage cartPage = inventoryPage.addToCart("sauce-labs-backpack").openCart();
+        CheckoutStepOnePage stepOne = cartPage.checkout();
+
+        // Nhập đầy đủ 3 trường hợp lệ
+        CheckoutStepTwoPage stepTwo = stepOne.proceedToStepTwo("An", "Nguyen", "70000");
+
+        // Kỳ vọng theo đặc tả: Điền đủ 3 trường -> chuyển sang step two thành công
+        // Thực tế lỗi (BUG-02): problem_user bị lỗi giao diện không nhận ký tự last Name, sẽ bi ghi đè lên first name -> Bị kẹt lại ở step one
+        // Assertion này sẽ fail đúng như thực tế hệ thống có lỗi!
+        assertTrue(stepTwo.isOnStepTwo(),
+                "problem_user bị lỗi giao diện chặn không nhập được Last Name, không thể sang Step Two");
     }
 }
