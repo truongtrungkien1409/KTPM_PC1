@@ -2,22 +2,18 @@ package vn.edu.softwaretesting.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.time.Duration;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvFileSource;
-import org.openqa.selenium.By;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import vn.edu.softwaretesting.core.WebTestBase;
+import vn.edu.softwaretesting.pages.CartPage;
 import vn.edu.softwaretesting.pages.CheckoutStepOnePage;
 import vn.edu.softwaretesting.pages.CheckoutStepTwoPage;
+import vn.edu.softwaretesting.pages.InventoryPage;
 import vn.edu.softwaretesting.pages.LoginPage;
 
 @Tag("web")
@@ -31,17 +27,12 @@ class CheckoutTest extends WebTestBase {
         // Bước 1: Đăng nhập vào hệ thống bằng tài khoản tiêu chuẩn
         new LoginPage(driver, baseUrl).open().login("standard_user", "secret_sauce");
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.urlContains("inventory.html"));
-        By addToCartBackpack = By.id("add-to-cart-sauce-labs-backpack");
+        // Bước 2: Thêm sản phẩm vào giỏ hàng và mở giỏ hàng qua Page Object
+        InventoryPage inventoryPage = new InventoryPage(driver, baseUrl).waitForPage();
+        CartPage cartPage = inventoryPage.addToCart("sauce-labs-backpack").openCart();
 
-        // Bước 2: Đảm bảo có ít nhất 1 sản phẩm trong giỏ hàng để kiểm tra
-        if (!driver.findElements(addToCartBackpack).isEmpty()) {
-            wait.until(ExpectedConditions.elementToBeClickable(addToCartBackpack)).click();
-        }
-
-        // Bước 3: Điều hướng trực tiếp đến trang Checkout Step One
-        stepOnePage = new CheckoutStepOnePage(driver, baseUrl).open();
+        // Bước 3: Nhấn checkout để điều hướng đến trang Checkout Step One
+        stepOnePage = cartPage.checkout();
     }
 
     @Test
@@ -63,9 +54,8 @@ class CheckoutTest extends WebTestBase {
         assertTrue(stepTwoPage.isOnStepTwo(), "Không chuyển được sang màn hình xác nhận thanh toán (Step Two)");
 
         stepTwoPage.clickCancel();
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.urlContains("inventory.html"));
-        assertTrue(driver.getCurrentUrl().contains("inventory.html"),
+        InventoryPage inventoryPage = new InventoryPage(driver, baseUrl);
+        assertTrue(inventoryPage.isOnInventory(),
                 "Bấm Cancel ở Step Two nhưng không quay về trang danh sách sản phẩm inventory.html");
     }
 
@@ -73,10 +63,11 @@ class CheckoutTest extends WebTestBase {
     @DisplayName("TC-CHK-UC-03: Huy thanh toan tai man hinh Step One quay ve gio hang cart.html")
     void cancelOnStepOneShouldReturnToCart() {
         stepOnePage.clickCancel();
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.urlContains("cart.html"));
-        assertTrue(driver.getCurrentUrl().contains("cart.html"),
+        CartPage cartPage = new CartPage(driver, baseUrl);
+        assertTrue(cartPage.isOnCart(),
                 "Bấm Cancel ở Step One nhưng không quay về trang giỏ hàng cart.html");
+        assertTrue(cartPage.hasProducts(),
+                "Sau khi bấm Cancel ở Step One, sản phẩm trong giỏ hàng phải còn nguyên");
     }
 
     @Test
@@ -87,11 +78,10 @@ class CheckoutTest extends WebTestBase {
         assertTrue(stepTwoPage.isOrderCompleted(), "Đơn hàng chưa hoàn tất thành công");
 
         stepTwoPage.clickBackHome();
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.urlContains("inventory.html"));
-        assertTrue(driver.getCurrentUrl().contains("inventory.html"),
+        InventoryPage inventoryPage = new InventoryPage(driver, baseUrl);
+        assertTrue(inventoryPage.isOnInventory(),
                 "Bấm Back Home nhưng không quay về trang danh sách sản phẩm inventory.html");
-        assertTrue(driver.findElements(By.className("shopping_cart_badge")).isEmpty(),
+        assertTrue(inventoryPage.isCartEmpty(),
                 "Giỏ hàng chưa được làm rỗng sau khi bấm Back Home");
     }
 
@@ -104,7 +94,11 @@ class CheckoutTest extends WebTestBase {
 
     @ParameterizedTest(name = "{0}: firstName=''{1}'', lastName=''{2}'', postalCode=''{3}''")
     @DisplayName("TC-CHK-DT: Kiem tra cac truong bat buoc form thanh toan theo bang quyet dinh")
-    @CsvFileSource(resources = "/checkout-dt-data.csv", numLinesToSkip = 1)
+    @CsvSource({
+            "TC-CHK-DT-02, '', Doe, 70000, Error: First Name is required",
+            "TC-CHK-DT-03, John, '', 70000, Error: Last Name is required",
+            "TC-CHK-DT-04, John, Doe, '', Error: Postal Code is required"
+    })
     void requiredFieldValidation(
             String testCaseId,
             String firstName,
@@ -138,5 +132,47 @@ class CheckoutTest extends WebTestBase {
                 "Thuế thực tế không khớp với công thức tính thuế 8%");
         assertEquals(expectedTotal, actualTotal, 0.01,
                 "Tổng tiền không khớp với công thức Item Total + Tax");
+    }
+
+    @Test
+    @Tag("known-bug")
+    @DisplayName("TC-CHK-BUG-01 [BUG-01]: He thong khong duoc phep cho checkout khi gio hang hoan toan rong")
+    void emptyCartShouldNotAllowCheckout() {
+        // Đăng nhập nhưng không thêm bất kỳ sản phẩm nào vào giỏ hàng
+        new LoginPage(driver, baseUrl).open().login("standard_user", "secret_sauce");
+        InventoryPage inventoryPage = new InventoryPage(driver, baseUrl).waitForPage();
+        inventoryPage.openCart();
+
+        CartPage cartPage = new CartPage(driver, baseUrl);
+        assertTrue(cartPage.isOnCart(), "Chưa ở màn hình giỏ hàng cart.html");
+
+        // Nhấn checkout khi giỏ hàng rỗng
+        cartPage.checkout();
+
+        // Kỳ vọng theo đặc tả: Hệ thống phải chặn và giữ người dùng ở lại cart.html
+        // Thực tế lỗi (BUG-01): Hệ thống vẫn cho chuyển sang checkout-step-one.html và đặt hàng $0.00
+        // Assertion này sẽ fail đúng như thực tế hệ thống có lỗi!
+        assertTrue(cartPage.isOnCart(),
+                "Hệ thống cho phép checkout khi giỏ hàng rỗng, vi phạm logic nghiệp vụ thương mại điện tử");
+    }
+
+    @Test
+    @Tag("known-bug")
+    @DisplayName("TC-CHK-BUG-02 [BUG-02]: problem_user khong the nhap duoc Last Name tai man hinh checkout")
+    void problemUserCannotEnterLastName() {
+        // Đăng nhập bằng problem_user, thêm hàng và chuyển sang checkout
+        new LoginPage(driver, baseUrl).open().login("problem_user", "secret_sauce");
+        InventoryPage inventoryPage = new InventoryPage(driver, baseUrl).waitForPage();
+        CartPage cartPage = inventoryPage.addToCart("sauce-labs-backpack").openCart();
+        CheckoutStepOnePage stepOne = cartPage.checkout();
+
+        // Nhập đầy đủ 3 trường hợp lệ
+        CheckoutStepTwoPage stepTwo = stepOne.proceedToStepTwo("An", "Nguyen", "70000");
+
+        // Kỳ vọng theo đặc tả: Điền đủ 3 trường -> chuyển sang step two thành công
+        // Thực tế lỗi (BUG-02): problem_user bị lỗi giao diện không nhận ký tự last Name, sẽ bi ghi đè lên first name -> Bị kẹt lại ở step one
+        // Assertion này sẽ fail đúng như thực tế hệ thống có lỗi!
+        assertTrue(stepTwo.isOnStepTwo(),
+                "problem_user bị lỗi giao diện chặn không nhập được Last Name, không thể sang Step Two");
     }
 }

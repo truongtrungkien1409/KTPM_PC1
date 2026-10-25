@@ -1,25 +1,21 @@
 package vn.edu.softwaretesting.pages;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-public class CartPage {
-    private final WebDriver driver;
-    private final String baseUrl;
-    private final WebDriverWait wait;
+public final class CartPage {
 
-    private final By cartItems = By.cssSelector(".cart_item");
-    private final By itemNames = By.cssSelector(".inventory_item_name");
-    private final By checkoutButton = By.id("checkout");
-    private final By continueShoppingButton = By.id("continue-shopping");
-    private final By removeButtons = By.xpath("//button[text()='Remove']");
+    private static final By CHECKOUT_BUTTON = By.id("checkout");
+    private static final By CART_ITEM = By.className("cart_item");
+
+    private final WebDriver driver;
+    private final WebDriverWait wait;
+    private final String baseUrl;
 
     public CartPage(WebDriver driver, String baseUrl) {
         this.driver = driver;
@@ -27,47 +23,29 @@ public class CartPage {
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
-    public CartPage open() {
-        driver.get(baseUrl + "/cart.html");
-        return this;
+    /** Nhấn nút Checkout để chuyển sang trang nhập thông tin thanh toán */
+    public CheckoutStepOnePage checkout() {
+        wait.until(ExpectedConditions.elementToBeClickable(CHECKOUT_BUTTON)).click();
+        return new CheckoutStepOnePage(driver, baseUrl);
     }
 
-    public int getCartItemCount() {
-        return driver.findElements(cartItems).size();
-    }
-
-    public List<String> getCartItemNames() {
-        return driver.findElements(itemNames).stream()
-                .map(WebElement::getText)
-                .collect(Collectors.toList());
-    }
-
-    public CartPage removeFirstItem() {
-        List<WebElement> buttons = driver.findElements(removeButtons);
-        if (!buttons.isEmpty()) {
-            wait.until(ExpectedConditions.elementToBeClickable(buttons.get(0))).click();
+    /** Kiểm tra URL hiện tại có chứa cart.html hay không (có chờ) */
+    public boolean isOnCart() {
+        try {
+            wait.until(ExpectedConditions.urlContains("cart.html"));
+            return true;
+        } catch (TimeoutException e) {
+            return false;
         }
-        return this;
     }
 
-    public CartPage removeItemByName(String productName) {
-        String xpath = String.format(
-                "//div[text()='%s']/ancestor::div[@class='cart_item']//button[text()='Remove']", 
-                productName);
-        WebElement removeButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
-        removeButton.click();
-        return this;
-    }
-
-    public void clickCheckout() {
-        wait.until(ExpectedConditions.elementToBeClickable(checkoutButton)).click();
-    }
-
-    public void clickContinueShopping() {
-        wait.until(ExpectedConditions.elementToBeClickable(continueShoppingButton)).click();
-    }
-
-    public String getCurrentUrl() {
-        return driver.getCurrentUrl();
+    /** Kiểm tra giỏ hàng có sản phẩm hay không (dùng explicit wait) */
+    public boolean hasProducts() {
+        try {
+            wait.until(ExpectedConditions.presenceOfElementLocated(CART_ITEM));
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 }
