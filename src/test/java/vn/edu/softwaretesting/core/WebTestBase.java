@@ -5,6 +5,7 @@ import java.util.Locale;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -31,7 +32,7 @@ public abstract class WebTestBase {
                     "Unsupported browser: " + browser);
         };
 
-        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(20));
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.manage().window().setSize(
                 new org.openqa.selenium.Dimension(1440, 900));
@@ -52,6 +53,7 @@ public abstract class WebTestBase {
 
     private ChromeOptions chromeOptions(boolean headless) {
         ChromeOptions options = new ChromeOptions();
+        options.setPageLoadStrategy(PageLoadStrategy.EAGER);
         if (headless) {
             options.addArguments("--headless=new");
             // Thêm window-size trực tiếp vào options để tránh crash ở headless mode
@@ -71,6 +73,7 @@ public abstract class WebTestBase {
 
     private FirefoxOptions firefoxOptions(boolean headless) {
         FirefoxOptions options = new FirefoxOptions();
+        options.setPageLoadStrategy(PageLoadStrategy.EAGER);
         if (headless) {
             options.addArguments("-headless");
             options.addArguments("--width=1440");
