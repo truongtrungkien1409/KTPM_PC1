@@ -1,10 +1,11 @@
 package vn.edu.softwaretesting.pages;
 
 import java.time.Duration;
-
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -35,30 +36,37 @@ public final class CheckoutStepOnePage {
 
     public CheckoutStepOnePage enterInformation(String firstName, String lastName, String postalCode) {
         wait.until(ExpectedConditions.visibilityOfElementLocated(FIRST_NAME));
-        
-        driver.findElement(FIRST_NAME).clear();
+
+        WebElement fn = driver.findElement(FIRST_NAME);
+        fn.clear();
         if (firstName != null && !firstName.isEmpty()) {
-            driver.findElement(FIRST_NAME).sendKeys(firstName);
+            fn.sendKeys(firstName);
         }
 
-        driver.findElement(LAST_NAME).clear();
+        WebElement ln = driver.findElement(LAST_NAME);
+        ln.clear();
         if (lastName != null && !lastName.isEmpty()) {
-            driver.findElement(LAST_NAME).sendKeys(lastName);
+            ln.sendKeys(lastName);
         }
 
-        driver.findElement(POSTAL_CODE).clear();
+        WebElement pc = driver.findElement(POSTAL_CODE);
+        pc.clear();
         if (postalCode != null && !postalCode.isEmpty()) {
-            driver.findElement(POSTAL_CODE).sendKeys(postalCode);
+            pc.sendKeys(postalCode);
         }
         return this;
     }
 
     public void clickContinue() {
-        wait.until(ExpectedConditions.elementToBeClickable(CONTINUE_BUTTON)).click();
+        WebElement btn = wait.until(ExpectedConditions.elementToBeClickable(CONTINUE_BUTTON));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", btn);
+        btn.click();
     }
 
     public void clickCancel() {
-        wait.until(ExpectedConditions.elementToBeClickable(CANCEL_BUTTON)).click();
+        WebElement btn = wait.until(ExpectedConditions.elementToBeClickable(CANCEL_BUTTON));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", btn);
+        btn.click();
     }
 
     public CheckoutStepTwoPage proceedToStepTwo(String firstName, String lastName, String postalCode) {
@@ -84,6 +92,10 @@ public final class CheckoutStepOnePage {
     }
 
     public boolean isOnStepOne() {
-        return driver.getCurrentUrl().contains("checkout-step-one.html");
+        try {
+            return wait.until(ExpectedConditions.urlContains("checkout-step-one.html"));
+        } catch (TimeoutException e) {
+            return driver.getCurrentUrl().contains("checkout-step-one.html");
+        }
     }
 }

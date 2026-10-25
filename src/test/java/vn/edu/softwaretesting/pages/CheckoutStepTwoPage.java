@@ -1,9 +1,11 @@
 package vn.edu.softwaretesting.pages;
 
 import java.time.Duration;
-
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -28,8 +30,12 @@ public final class CheckoutStepTwoPage {
     }
 
     public boolean isOnStepTwo() {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(ITEM_TOTAL_LABEL));
-        return driver.getCurrentUrl().contains("checkout-step-two.html");
+        try {
+            return wait.until(ExpectedConditions.urlContains("checkout-step-two.html"))
+                    && wait.until(ExpectedConditions.visibilityOfElementLocated(ITEM_TOTAL_LABEL)).isDisplayed();
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 
     public double getItemTotal() {
@@ -51,35 +57,42 @@ public final class CheckoutStepTwoPage {
     }
 
     public void clickFinish() {
-        org.openqa.selenium.WebElement finishBtn = wait.until(ExpectedConditions.elementToBeClickable(FINISH_BUTTON));
-        ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", finishBtn);
+        WebElement finishBtn = wait.until(ExpectedConditions.elementToBeClickable(FINISH_BUTTON));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", finishBtn);
         finishBtn.click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(COMPLETE_HEADER));
     }
 
     public void clickCancel() {
-        wait.until(ExpectedConditions.elementToBeClickable(CANCEL_BUTTON)).click();
+        WebElement cancelBtn = wait.until(ExpectedConditions.elementToBeClickable(CANCEL_BUTTON));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", cancelBtn);
+        cancelBtn.click();
     }
 
     public String getCompleteMessage() {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(COMPLETE_HEADER));
-        return driver.findElement(COMPLETE_HEADER).getText();
+        try {
+            return wait.until(ExpectedConditions.visibilityOfElementLocated(COMPLETE_HEADER)).getText();
+        } catch (TimeoutException e) {
+            return "";
+        }
     }
 
     public boolean isOrderCompleted() {
-        return driver.getCurrentUrl().contains("checkout-complete.html")
-                && !driver.findElements(COMPLETE_HEADER).isEmpty()
-                && driver.findElement(COMPLETE_HEADER).isDisplayed();
+        try {
+            return wait.until(ExpectedConditions.urlContains("checkout-complete.html"))
+                    && wait.until(ExpectedConditions.visibilityOfElementLocated(COMPLETE_HEADER)).isDisplayed();
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 
     public void clickBackHome() {
-        org.openqa.selenium.WebElement backHomeBtn = wait.until(ExpectedConditions.elementToBeClickable(BACK_HOME_BUTTON));
-        ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", backHomeBtn);
+        WebElement backHomeBtn = wait.until(ExpectedConditions.elementToBeClickable(BACK_HOME_BUTTON));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", backHomeBtn);
         backHomeBtn.click();
     }
 
     private double parsePrice(String text) {
-        // Trích xuất số thập phân sau ký tự '$' (Ví dụ: "Item total: $29.99" -> 29.99)
         int dollarIndex = text.indexOf('$');
         if (dollarIndex != -1) {
             String numberPart = text.substring(dollarIndex + 1).trim();
