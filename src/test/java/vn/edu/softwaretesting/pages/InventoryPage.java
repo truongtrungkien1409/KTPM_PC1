@@ -36,20 +36,17 @@ public final class InventoryPage {
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
-    /** Chờ trang inventory tải xong */
     public InventoryPage waitForPage() {
         wait.until(ExpectedConditions.urlContains("inventory.html"));
         return this;
     }
 
-    /** Nhấn nút Add to cart cho sản phẩm theo slug (ví dụ: "sauce-labs-backpack") */
     public InventoryPage addToCart(String productSlug) {
         By addButton = By.id("add-to-cart-" + productSlug);
         wait.until(ExpectedConditions.elementToBeClickable(addButton)).click();
         return this;
     }
 
-    /** Thêm sản phẩm vào giỏ hàng theo tên sản phẩm */
     public InventoryPage addItemToCartByName(String productName) {
         String slug;
         if (productName.contains("Test.allTheThings")) {
@@ -64,7 +61,6 @@ public final class InventoryPage {
         return addToCart(slug);
     }
 
-    /** Lấy số lượng sản phẩm hiển thị trên badge giỏ hàng */
     public int getCartBadgeCount() {
         try {
             String badgeText = wait.until(ExpectedConditions.visibilityOfElementLocated(CART_BADGE)).getText();
@@ -74,14 +70,12 @@ public final class InventoryPage {
         }
     }
 
-    /** Sắp xếp sản phẩm theo option (az, za, lohi, hilo) */
     public InventoryPage sortBy(String option) {
         WebElement sortDropdown = wait.until(ExpectedConditions.elementToBeClickable(SORT_CONTAINER));
         new Select(sortDropdown).selectByValue(option);
         return this;
     }
 
-    /** Lấy danh sách tên sản phẩm hiện tại trên trang */
     public List<String> names() {
         List<WebElement> nameElements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(ITEM_NAME));
         List<String> names = new ArrayList<>();
@@ -91,7 +85,6 @@ public final class InventoryPage {
         return names;
     }
 
-    /** Lấy danh sách giá sản phẩm hiện tại trên trang */
     public List<Double> prices() {
         List<WebElement> priceElements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(ITEM_PRICE));
         List<Double> prices = new ArrayList<>();
@@ -102,13 +95,11 @@ public final class InventoryPage {
         return prices;
     }
 
-    /** Nhấn biểu tượng giỏ hàng để mở trang cart.html */
     public CartPage openCart() {
         wait.until(ExpectedConditions.elementToBeClickable(CART_LINK)).click();
         return new CartPage(driver, baseUrl);
     }
 
-    /** Kiểm tra URL hiện tại có chứa inventory.html hay không (có chờ) */
     public boolean isOnInventory() {
         try {
             wait.until(ExpectedConditions.urlContains("inventory.html"));
@@ -118,12 +109,27 @@ public final class InventoryPage {
         }
     }
 
-    /** Kiểm tra giỏ hàng rỗng (badge không hiển thị, dùng explicit wait) */
     public boolean isCartEmpty() {
         try {
             return wait.until(ExpectedConditions.invisibilityOfElementLocated(CART_BADGE));
         } catch (Exception e) {
             return driver.findElements(CART_BADGE).isEmpty();
         }
+    }
+
+    public InventoryPage removeItemFromCartByName(String productName) {
+        String slug;
+        if (productName.contains("Test.allTheThings")) {
+            slug = "test.allthethings()-t-shirt-(red)";
+        } else {
+            slug = productName.toLowerCase()
+                    .replace(" ", "-")
+                    .replace("(", "")
+                    .replace(")", "")
+                    .replace(".", "");
+        }
+        By removeButton = By.id("remove-" + slug);
+        wait.until(ExpectedConditions.elementToBeClickable(removeButton)).click();
+        return this;
     }
 }

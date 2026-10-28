@@ -45,4 +45,45 @@ public class CartPage {
         btn.click();
         return new CheckoutStepOnePage(driver, baseUrl);
     }
+
+    /** Lấy tổng số lượng sản phẩm đang hiển thị trong giỏ hàng */
+    public int getCartItemCount() {
+        try {
+            return wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(cartItem)).size();
+        } catch (TimeoutException e) {
+            return 0;
+        }
+    }
+
+    public boolean isBadgeDisplayed() {
+        try {
+            return !driver.findElements(By.className("shopping_cart_badge")).isEmpty() 
+                    && driver.findElement(By.className("shopping_cart_badge")).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public int getCartBadgeCount() {
+        try {
+            String badgeText = driver.findElement(By.className("shopping_cart_badge")).getText();
+            return Integer.parseInt(badgeText);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    public CartPage removeItemByName(String productName) {
+        String slug = productName.toLowerCase().replace(" ", "-").replace("(", "").replace(")", "").replace(".", "");
+        By removeButton = By.id("remove-" + slug);
+        WebElement btn = wait.until(ExpectedConditions.elementToBeClickable(removeButton));
+        btn.click();
+        return this;
+    }
+
+    public InventoryPage clickContinueShopping() {
+        WebElement continueBtn = wait.until(ExpectedConditions.elementToBeClickable(By.id("continue-shopping")));
+        continueBtn.click();
+        return new InventoryPage(driver, baseUrl);
+    }
 }
