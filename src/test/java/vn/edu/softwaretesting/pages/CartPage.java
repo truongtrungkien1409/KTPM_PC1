@@ -46,7 +46,6 @@ public class CartPage {
         return new CheckoutStepOnePage(driver, baseUrl);
     }
 
-    /** Lấy tổng số lượng sản phẩm đang hiển thị trong giỏ hàng */
     public int getCartItemCount() {
         try {
             return wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(cartItem)).size();

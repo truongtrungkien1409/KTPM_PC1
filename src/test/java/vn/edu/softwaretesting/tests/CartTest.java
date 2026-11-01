@@ -122,10 +122,9 @@ class CartTest extends WebTestBase {
         assertEquals(2, inventoryPage.getCartBadgeCount());
 
         inventoryPage.removeItemFromCartByName("Sauce Labs Fleece Jacket");
-        
         assertEquals(1, inventoryPage.getCartBadgeCount());
 
-        inventoryPage.openCart();
+        cartPage = inventoryPage.openCart();
         assertEquals(1, cartPage.getCartItemCount());
     }
 
