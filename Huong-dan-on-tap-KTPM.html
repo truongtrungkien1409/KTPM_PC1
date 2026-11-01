@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giải thích JUnit 5 Extension & Đồ án KTPM - Yiwei & Yzy</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #38bdf8;
+            --accent: #818cf8;
+            --code-bg: #090d16;
+            --border: #334155;
+            --tag: #0369a1;
+        }
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f8fafc;
+                --card-bg: #ffffff;
+                --text: #0f172a;
+                --text-muted: #64748b;
+                --primary: #0284c7;
+                --accent: #4f46e5;
+                --code-bg: #f1f5f9;
+                --border: #e2e8f0;
+                --tag: #e0f2fe;
+            }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 16px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 12px;
+            margin-top: 10px;
+        }
+        h2 {
+            color: var(--accent);
+            font-size: 1.4rem;
+            margin-top: 28px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+        h3 {
+            font-size: 1.15rem;
+            margin-top: 20px;
+        }
+        p, li {
+            font-size: 1rem;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin: 16px 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        code {
+            font-family: Consolas, Monaco, "Courier New", monospace;
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--primary);
+        }
+        pre {
+            background: var(--code-bg);
+            padding: 14px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        pre code {
+            padding: 0;
+            background: none;
+            color: var(--text);
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+        .highlight {
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>BẢN CHẤT ĐỒ ÁN KTPM & GIẢI THÍCH JUNIT 5 EXTENSION</h1>
+    <p><em>Tài liệu tổng hợp ôn tập vấn đáp & báo cáo dành cho Yzy.</em></p>
+
+    <div class="card">
+        <h2>1. Bản chất Đồ án KTPM (Web UI Automation Testing)</h2>
+        <ul>
+            <li><strong>Hệ thống kiểm thử (SUT):</strong> Website bán hàng mẫu <strong>SauceDemo</strong> (<code>https://www.saucedemo.com</code>).</li>
+            <li><strong>Công nghệ:</strong> Java 17, Maven 3.9, Selenium WebDriver 4.27, JUnit 5 (Jupiter 5.11).</li>
+            <li><strong>Mô hình kiến trúc Page Object Model (POM):</strong>
+                <ul>
+                    <li><code>pages/</code>: Quản lý locator và các thao tác click, gõ phím trên giao diện.</li>
+                    <li><code>tests/</code>: Kịch bản kiểm thử, kiểm tra kết quả kỳ vọng (Assertions).</li>
+                </ul>
+            </li>
+            <li><strong>Các kỹ thuật kiểm thử áp dụng:</strong>
+                <ul>
+                    <li><strong>EP (Phân vùng tương đương):</strong> Phân chia nhóm tài khoản hợp lệ, sai mật khẩu, tài khoản bị khóa trong <code>LoginTest</code>.</li>
+                    <li><strong>BVA (Giá trị biên):</strong> Kiểm tra giỏ hàng rỗng (N=0), thêm 1 món (N=1), thêm tối đa 6 món (N=6).</li>
+                    <li><strong>DT (Bảng quyết định):</strong> Kiểm tra các tổ hợp bỏ trống trường tại Step One form checkout (First Name, Last Name, Postal Code).</li>
+                    <li><strong>UC (Ca sử dụng):</strong> Kiểm thử luồng mua hàng xuyên suốt End-to-End và các nút hủy Cancel / Back Home.</li>
+                    <li><strong>DDT (Kiểm thử theo dữ liệu):</strong> Nạp dữ liệu từ file ngoài (<code>login-data.csv</code>, <code>products.csv</code>) dùng <code>@ParameterizedTest</code> và <code>@CsvFileSource</code>.</li>
+                    <li><strong>NFR (Phi chức năng):</strong> Đo thời gian phản hồi tải trang inventory &le; 3 giây (<code>PerformanceTest</code>).</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>2. Giải thích chi tiết ScreenshotOnFailureExtension.java</h2>
+        
+        <div class="highlight">
+            <strong>Tại sao chọn <code>AfterTestExecutionCallback</code> thay vì <code>TestWatcher</code>?</strong><br>
+            Trong vòng đời JUnit 5, callback <code>afterTestExecution()</code> kích hoạt <strong>NGAY LẬP TỨC</strong> khi test method bị FAIL (ném ngoại lệ) và chạy <strong>TRƯỚC</strong> các hàm <code>@AfterEach</code>.<br>
+            Lúc này trình duyệt vẫn còn đang mở nguyên trạng thái lỗi &rarr; Chụp ảnh thành công 100%.<br>
+            Nếu dùng <code>TestWatcher.testFailed()</code>, callback này chạy sau <code>@AfterEach</code> (lúc đó <code>driver.quit()</code> đã đóng trình duyệt) &rarr; ném lỗi mất session <code>NoSuchSessionException</code>.
+        </div>
+
+        <h3>Chi tiết các dòng lệnh quan trọng:</h3>
+        <ul>
+            <li><code>Optional&lt;Throwable&gt; exception = context.getExecutionException();</code>: Kiểm tra xem test case vừa chạy có ném ra lỗi hay không. Nếu có lỗi (test FAIL), <code>exception.isPresent()</code> trả về <code>true</code>.</li>
+            <li><code>if (testInstance instanceof WebTestBase webTestBase)</code>: Kiểm tra xem class test có kế thừa từ <code>WebTestBase</code> không, từ đó gọi <code>webTestBase.getDriver()</code> để lấy đối tượng điều khiển trình duyệt <code>WebDriver</code>.</li>
+            <li><code>File screenshot = takesScreenshot.getScreenshotAs(OutputType.FILE);</code>: Ép kiểu sang <code>TakesScreenshot</code> để ra lệnh Selenium chụp lại toàn bộ màn hình và xuất ra file ảnh tạm thời.</li>
+            <li><code>Path outputFolder = Paths.get("evidence");</code>: Định vị con trỏ đường dẫn tới thư mục <code>evidence</code> ở gốc dự án.</li>
+            <li><code>if (!Files.exists(outputFolder)) { Files.createDirectories(outputFolder); }</code>: Dấu <code>!</code> là phủ định. Ý nghĩa: <em>"Nếu thư mục evidence CHƯA TỒN TẠI trên máy thì tự động tạo mới ra"</em> (giúp code chạy trên bất kỳ máy nào cũng không sợ thiếu folder).</li>
+            <li><code>try { ... } catch (Exception e) { ... }</code>: Bọc toàn bộ quá trình chụp và ghi file. Thao tác với trình duyệt và ghi ổ đĩa đều có rủi ro phát sinh ngoại lệ (đầy ổ đĩa, crash). Try-catch giúp bắt gọn mọi sự cố, chỉ in thông báo cảnh báo và <strong>tuyệt đối không làm sập (crash)</strong> chương trình kiểm thử JUnit.</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>3. Mã nguồn Extension: ScreenshotOnFailureExtension.java</h2>
+<pre><code>package vn.edu.softwaretesting.core;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
+import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+
+public class ScreenshotOnFailureExtension implements AfterTestExecutionCallback {
+
+    private static final String EVIDENCE_DIR = "evidence";
+
+    @Override
+    public void afterTestExecution(ExtensionContext context) throws Exception {
+        Optional&lt;Throwable&gt; exception = context.getExecutionException();
+        if (exception.isPresent()) {
+            captureScreenshot(context);
+        }
+    }
+
+    private void captureScreenshot(ExtensionContext context) {
+        Object testInstance = context.getRequiredTestInstance();
+
+        WebDriver driver = null;
+        if (testInstance instanceof WebTestBase webTestBase) {
+            driver = webTestBase.getDriver();
+        }
+
+        if (driver == null) {
+            System.err.println("[SCREENSHOT] Không tìm thấy WebDriver để chụp màn hình.");
+            return;
+        }
+
+        try {
+            if (driver instanceof TakesScreenshot takesScreenshot) {
+                File screenshot = takesScreenshot.getScreenshotAs(OutputType.FILE);
+
+                Path outputFolder = Paths.get(EVIDENCE_DIR);
+                if (!Files.exists(outputFolder)) {
+                    Files.createDirectories(outputFolder);
+                }
+
+                String className = context.getRequiredTestClass().getSimpleName();
+                String methodName = context.getRequiredTestMethod().getName();
+                String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+
+                String fileName = String.format("%s_%s_%s_FAIL.png", className, methodName, timestamp);
+                Path destination = outputFolder.resolve(fileName);
+
+                Files.copy(screenshot.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("[SCREENSHOT] Đã lưu ảnh chụp lỗi: " + destination.toAbsolutePath());
+            }
+        } catch (Exception e) {
+            System.err.println("[SCREENSHOT] Lỗi khi chụp ảnh màn hình: " + e.getMessage());
+        }
+    }
+}</code></pre>
+    </div>
+
+    <div class="card">
+        <h2>4. Tích hợp vào WebTestBase.java</h2>
+<pre><code>@ExtendWith(ScreenshotOnFailureExtension.class)
+public abstract class WebTestBase {
+    protected WebDriver driver;
+    protected String baseUrl;
+
+    public WebDriver getDriver() {
+        return driver;
+    }
+    // ... @BeforeEach và @AfterEach giữ nguyên
+}</code></pre>
+    </div>
+
+    <div class="card">
+        <h2>5. Câu lệnh thực thi kiểm thử trên máy</h2>
+<pre><code># 1. Chạy test case lỗi để thử tính năng chụp ảnh:
+mvn test -Dtest=PerformanceTest
+
+# 2. Chạy toàn bộ test suite dự án:
+mvn clean test</code></pre>
+    </div>
+
+    <div class="footer">
+        Đồ án Kiểm thử phần mềm - Nhóm KTPM_PC1 | Trường Đại học Sài Gòn
+    </div>
+</div>
+</body>
+</html>
