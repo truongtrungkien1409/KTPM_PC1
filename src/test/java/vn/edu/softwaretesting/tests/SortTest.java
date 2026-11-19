@@ -1,6 +1,7 @@
 package vn.edu.softwaretesting.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -9,6 +10,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -57,4 +59,35 @@ class SortTest extends WebTestBase {
         assertEquals(expected, actual,
                 () -> tcId + " failed: danh sách giá không đúng thứ tự với option=" + option);
     }
+
+
+    @Test
+    @Tag("known-bug")
+    @DisplayName("TC-SORT-05 [BUG-04]: Sort with problem_user")
+    void sortByPriceWithProblemUserShouldReproduceBug() {
+
+        driver.manage().deleteAllCookies();
+
+        new LoginPage(driver, baseUrl)
+                .open()
+                .login("problem_user", "secret_sauce");
+
+        assertTrue(
+                driver.getCurrentUrl().contains("inventory.html"),
+                "problem_user khong the truy cap Inventory"
+        );
+
+        List<Double> actual =
+                inventoryPage.sortBy("lohi").prices();
+
+        List<Double> expected = new ArrayList<>(actual);
+
+        expected.sort(Comparator.naturalOrder());
+        assertEquals(
+                expected,
+                actual,
+                () -> "TC-SORT-05 [BUG-04]: problem_user khong sap xep gia tang dan"
+        );
+    }
+
 }
