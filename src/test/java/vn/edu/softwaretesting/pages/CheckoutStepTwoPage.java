@@ -3,6 +3,7 @@ package vn.edu.softwaretesting.pages;
 import java.time.Duration;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -28,8 +29,12 @@ public final class CheckoutStepTwoPage {
     }
 
     public boolean isOnStepTwo() {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(ITEM_TOTAL_LABEL));
-        return driver.getCurrentUrl().contains("checkout-step-two.html");
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(ITEM_TOTAL_LABEL));
+            return driver.getCurrentUrl().contains("checkout-step-two.html");
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 
     public double getItemTotal() {

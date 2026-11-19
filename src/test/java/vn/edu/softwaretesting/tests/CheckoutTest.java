@@ -74,6 +74,8 @@ class CheckoutTest extends WebTestBase {
     @DisplayName("TC-CHK-UC-04: Bam nut Back Home tai man hinh hoan tat quay ve trang san pham va reset gio hang")
     void backHomeShouldReturnToInventoryAndResetCart() {
         CheckoutStepTwoPage stepTwoPage = stepOnePage.proceedToStepTwo("John", "Doe", "70000");
+        assertTrue(stepTwoPage.isOnStepTwo(), "Không chuyển được sang màn hình xác nhận thanh toán (Step Two)");
+
         stepTwoPage.clickFinish();
         assertTrue(stepTwoPage.isOrderCompleted(), "Đơn hàng chưa hoàn tất thành công");
 
@@ -119,6 +121,7 @@ class CheckoutTest extends WebTestBase {
     @DisplayName("TC-CHK-CALC-01: Xac thuc tinh toan cong thuc Thue 8% va Tong tien")
     void verifyTaxAndTotalCalculation() {
         CheckoutStepTwoPage stepTwoPage = stepOnePage.proceedToStepTwo("Nguyen", "Van A", "70000");
+        assertTrue(stepTwoPage.isOnStepTwo(), "Không chuyển được sang màn hình xác nhận thanh toán (Step Two)");
 
         double itemTotal = stepTwoPage.getItemTotal();
         double actualTax = stepTwoPage.getTax();
@@ -138,7 +141,11 @@ class CheckoutTest extends WebTestBase {
     @Tag("known-bug")
     @DisplayName("TC-CHK-BUG-01 [BUG-01]: He thong khong duoc phep cho checkout khi gio hang hoan toan rong")
     void emptyCartShouldNotAllowCheckout() {
-        // Đăng nhập nhưng không thêm bất kỳ sản phẩm nào vào giỏ hàng
+        // Reset session và giỏ hàng của standard_user từ @BeforeEach để đảm bảo giỏ hàng rỗng hoàn toàn
+        driver.manage().deleteAllCookies();
+        ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("window.localStorage.clear(); window.sessionStorage.clear();");
+
+        // Đăng nhập lại nhưng không thêm bất kỳ sản phẩm nào vào giỏ hàng
         new LoginPage(driver, baseUrl).open().login("standard_user", "secret_sauce");
         InventoryPage inventoryPage = new InventoryPage(driver, baseUrl).waitForPage();
         inventoryPage.openCart();
@@ -160,6 +167,10 @@ class CheckoutTest extends WebTestBase {
     @Tag("known-bug")
     @DisplayName("TC-CHK-BUG-02 [BUG-02]: problem_user khong the nhap duoc Last Name tai man hinh checkout")
     void problemUserCannotEnterLastName() {
+        // Reset session của standard_user từ @BeforeEach để đăng nhập sạch với problem_user
+        driver.manage().deleteAllCookies();
+        ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("window.localStorage.clear(); window.sessionStorage.clear();");
+
         // Đăng nhập bằng problem_user, thêm hàng và chuyển sang checkout
         new LoginPage(driver, baseUrl).open().login("problem_user", "secret_sauce");
         InventoryPage inventoryPage = new InventoryPage(driver, baseUrl).waitForPage();
