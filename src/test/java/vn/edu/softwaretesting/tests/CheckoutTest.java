@@ -1,6 +1,7 @@
 package vn.edu.softwaretesting.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -136,6 +137,11 @@ class CheckoutTest extends WebTestBase {
     @Tag("known-bug")
     @DisplayName("TC-CHK-BUG-01 [BUG-01]: He thong khong duoc phep cho checkout khi gio hang hoan toan rong")
     void emptyCartShouldNotAllowCheckout() {
+        // Xóa cookie và session của standard_user từ @BeforeEach để đảm bảo giỏ hàng rỗng hoàn toàn
+        driver.manage().deleteAllCookies();
+        ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("window.localStorage.clear(); window.sessionStorage.clear();");
+
+        // Đăng nhập lại với giỏ hàng rỗng
         new LoginPage(driver, baseUrl).open().login("standard_user", "secret_sauce");
         InventoryPage inventoryPage = new InventoryPage(driver, baseUrl);
         CartPage cartPage = inventoryPage.openCart();
@@ -143,6 +149,9 @@ class CheckoutTest extends WebTestBase {
         assertTrue(cartPage.isOnCart(), "Chưa ở màn hình giỏ hàng cart.html");
         cartPage.checkout();
 
+        // Kỳ vọng theo đặc tả: Hệ thống phải chặn và giữ người dùng ở lại cart.html
+        // Thực tế lỗi (BUG-01): Hệ thống vẫn cho chuyển sang checkout-step-one.html và đặt hàng $0.00
+        // Assertion này sẽ fail (AssertionFailedError) đúng như thực tế hệ thống có lỗi!
         assertTrue(cartPage.isOnCart(),
                 "Hệ thống cho phép checkout khi giỏ hàng rỗng, vi phạm logic nghiệp vụ thương mại điện tử");
     }
@@ -151,14 +160,24 @@ class CheckoutTest extends WebTestBase {
     @Tag("known-bug")
     @DisplayName("TC-CHK-BUG-02 [BUG-02]: problem_user khong the nhap duoc Last Name tai man hinh checkout")
     void problemUserCannotEnterLastName() {
+        // Xóa cookie và session từ @BeforeEach để đăng nhập sạch với problem_user
+        driver.manage().deleteAllCookies();
+        ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("window.localStorage.clear(); window.sessionStorage.clear();");
+
+        // Đăng nhập bằng problem_user, thêm hàng và chuyển sang checkout
         new LoginPage(driver, baseUrl).open().login("problem_user", "secret_sauce");
         InventoryPage inventoryPage = new InventoryPage(driver, baseUrl);
         CartPage cartPage = inventoryPage.addToCart("sauce-labs-backpack").openCart();
         CheckoutStepOnePage stepOne = cartPage.checkout();
 
-        CheckoutStepTwoPage stepTwo = stepOne.proceedToStepTwo("An", "Nguyen", "70000");
+        // Nhập đầy đủ 3 trường hợp lệ
+        stepOne.enterInformation("An", "Nguyen", "70000");
+        stepOne.clickContinue();
 
-        assertTrue(stepTwo.isOnStepTwo(),
-                "problem_user bị lỗi giao diện chặn không nhập được Last Name, không thể sang Step Two");
+        // Kỳ vọng theo đặc tả: Điền đủ 3 trường hợp lệ thì không được có lỗi hiển thị
+        // Thực tế lỗi (BUG-02): problem_user bị lỗi giao diện chặn không nhập được Last Name -> văng lỗi "Error: Last Name is required"
+        // Assertion này sẽ fail ngay lập tức (AssertionFailedError) đúng chuẩn lỗi đã biết, không bị TimeoutException!
+        assertFalse(stepOne.isErrorDisplayed(),
+                "problem_user bị lỗi giao diện chặn không nhập được Last Name, văng lỗi: " + stepOne.getErrorMessage());
     }
 }
