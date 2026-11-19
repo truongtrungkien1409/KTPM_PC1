@@ -71,6 +71,8 @@ class CheckoutTest extends WebTestBase {
     @DisplayName("TC-CHK-UC-04: Bam nut Back Home tai man hinh hoan tat quay ve trang san pham va reset gio hang")
     void backHomeShouldReturnToInventoryAndResetCart() {
         CheckoutStepTwoPage stepTwoPage = stepOnePage.proceedToStepTwo("John", "Doe", "70000");
+        assertTrue(stepTwoPage.isOnStepTwo(), "Không chuyển được sang màn hình xác nhận thanh toán (Step Two)");
+
         stepTwoPage.clickFinish();
         assertTrue(stepTwoPage.isOrderCompleted(), "Đơn hàng chưa hoàn tất thành công");
 
@@ -115,6 +117,7 @@ class CheckoutTest extends WebTestBase {
     @DisplayName("TC-CHK-CALC-01: Xac thuc tinh toan cong thuc Thue 8% va Tong tien")
     void verifyTaxAndTotalCalculation() {
         CheckoutStepTwoPage stepTwoPage = stepOnePage.proceedToStepTwo("Nguyen", "Van A", "70000");
+        assertTrue(stepTwoPage.isOnStepTwo(), "Không chuyển được sang màn hình xác nhận thanh toán (Step Two)");
 
         double itemTotal = stepTwoPage.getItemTotal();
         double actualTax = stepTwoPage.getTax();
