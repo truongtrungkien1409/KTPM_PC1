@@ -1,46 +1,36 @@
 package vn.edu.softwaretesting.tests;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvFileSource;
-
 import vn.edu.softwaretesting.core.WebTestBase;
 import vn.edu.softwaretesting.pages.LoginPage;
 import vn.edu.softwaretesting.pages.LoginPage.LoginResult;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvFileSource;
 
-@Tag("web")
-@DisplayName("FR-LOGIN: Authentication")
-class LoginTest extends WebTestBase {
+import static org.junit.jupiter.api.Assertions.*;
 
-    private LoginPage loginPage;
-
-    @BeforeEach
-    void openLoginPage() {
-        loginPage = new LoginPage(driver, baseUrl).open();
-    }
+public class LoginTest extends WebTestBase {
 
     @ParameterizedTest(name = "TC-LOGIN-{index}: user={0}, accepted={2}")
     @CsvFileSource(resources = "/login-data.csv", numLinesToSkip = 1)
-    void loginShouldMatchExpectedOutcome(
-            String username,
-            String password,
-            boolean expectedAccepted,
-            String expectedEvidence) {
+    @DisplayName("FR-01: Login Parameterized Test")
+    void loginShouldMatchExpectedOutcome(String username, String password, boolean expectedAccepted, String expectedEvidence) {
+        // Xử lý giá trị rỗng từ CSV (nếu chuỗi rỗng thì chuyển thành "")
+        String user = (username == null) ? "" : username;
+        String pass = (password == null) ? "" : password;
 
-        LoginResult actual = loginPage.login(username, password);
+        LoginResult result = new LoginPage(driver, baseUrl)
+                .open()
+                .login(user, pass);
 
-        assertEquals(expectedAccepted, actual.accepted(),
-                () -> "Unexpected result for user: " + username);
-        assertTrue(
-                actual.currentUrl().contains(expectedEvidence)
-                        || actual.message().contains(expectedEvidence),
-                () -> "Expected evidence '" + expectedEvidence
-                        + "', but URL/message was: "
-                        + actual.currentUrl() + " / " + actual.message());
+        assertEquals(expectedAccepted, result.accepted(), "Login acceptance mismatch for user: " + user);
+
+        if (expectedAccepted) {
+            assertTrue(driver.getCurrentUrl().contains(expectedEvidence),
+                    () -> "Expected URL to contain: " + expectedEvidence + ", but got: " + driver.getCurrentUrl());
+        } else {
+            assertTrue(result.errorMessage().contains(expectedEvidence),
+                    () -> "Expected error message to contain: " + expectedEvidence + ", but got: " + result.errorMessage());
+        }
     }
 }

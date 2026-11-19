@@ -42,18 +42,16 @@ public final class LoginPage {
                     ExpectedConditions.visibilityOfElementLocated(INVENTORY),
                     ExpectedConditions.visibilityOfElementLocated(ERROR)));
         } catch (TimeoutException exception) {
-            return new LoginResult(false, driver.getCurrentUrl(),
-                    "No success or error state appeared within the timeout");
+            return new LoginResult(false, "No success or error state appeared within the timeout");
         }
 
         boolean accepted = !driver.findElements(INVENTORY).isEmpty();
         String message = accepted
                 ? "Login accepted"
                 : driver.findElement(ERROR).getText();
-        return new LoginResult(accepted, driver.getCurrentUrl(), message);
+        return new LoginResult(accepted, message);
     }
 
-    public record LoginResult(boolean accepted, String currentUrl,
-                              String message) {
+    public record LoginResult(boolean accepted, String errorMessage) {
     }
 }
