@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.JavascriptExecutor;
 
 import vn.edu.softwaretesting.core.WebTestBase;
 import vn.edu.softwaretesting.pages.CartPage;
@@ -155,5 +156,54 @@ class CartTest extends WebTestBase {
         inventoryPage = cartPage.clickContinueShopping();
         assertTrue(inventoryPage.isOnInventory());
         assertEquals(1, inventoryPage.getCartBadgeCount());
+    }
+
+    @Test
+    @Tag("known-bug")
+    @DisplayName("TC-CART-PROB-01 [BUG-02]: Nút Add/Remove bị liệt hoặc không phản hồi với problem_user")
+    void problemUserInventoryButtonsGlitchTest() {
+        ((JavascriptExecutor) driver).executeScript("window.localStorage.clear();");
+        new LoginPage(driver, baseUrl).open().login("problem_user", "secret_sauce");
+        InventoryPage probInventory = new InventoryPage(driver, baseUrl);
+        probInventory.waitForPage();
+
+        // Thao tác thử nghiệm trên tài khoản problem_user khớp đặc tả BUG-02[span_8](start_span)[span_8](end_span)
+        probInventory.addItemToCartByName("Sauce Labs Bolt T-Shirt");
+        
+        int badgeCount = probInventory.getCartBadgeCount();
+        assertTrue(badgeCount == 1, 
+                "BUG-02: problem_user gặp lỗi giao diện, badge giỏ hàng không cập nhật đúng số lượng[span_9](start_span)[span_9](end_span)");
+    }
+
+    @Test
+    @Tag("known-bug")
+    @DisplayName("TC-CART-PROB-03 [BUG-06]: Thêm sản phẩm từ trang chi tiết không cập nhật đúng giỏ hàng")
+    void problemUserDetailCartBugTest() {
+        ((JavascriptExecutor) driver).executeScript("window.localStorage.clear();");
+        new LoginPage(driver, baseUrl).open().login("problem_user", "secret_sauce");
+        InventoryPage probInventory = new InventoryPage(driver, baseUrl);
+        probInventory.waitForPage();
+
+        // Kiểm chứng lỗi BUG-06 (thêm Fleece Jacket ở trang chi tiết nhưng cart trống)[span_10](start_span)[span_10](end_span)
+        cartPage = probInventory.openCart();
+        int itemCount = cartPage.getCartItemCount();
+        assertTrue(itemCount > 0, 
+                "BUG-06: Thêm sản phẩm từ trang chi tiết nhưng giỏ hàng (cart.html) vẫn trống[span_11](start_span)[span_11](end_span)");
+    }
+
+    @Test
+    @Tag("known-bug")
+    @DisplayName("TC-CART-PROB-04 [BUG-10]: Trạng thái nút Add/Remove của T-Shirt Red không đồng bộ")
+    void problemUserRedShirtStateDesyncTest() {
+        ((JavascriptExecutor) driver).executeScript("window.localStorage.clear();");
+        new LoginPage(driver, baseUrl).open().login("problem_user", "secret_sauce");
+        InventoryPage probInventory = new InventoryPage(driver, baseUrl);
+        probInventory.waitForPage();
+
+        probInventory.addItemToCartByName("Test.allTheThings() T-Shirt (Red)");
+
+        // Kỳ vọng chuẩn: thêm 1 sản phẩm thành công thì badge giỏ hàng phải là 1 (nếu lỗi sẽ FAIL)
+        assertEquals(1, probInventory.getCartBadgeCount(),
+                "BUG-10: Trạng thái nút Add/Remove của T-Shirt Red không đồng bộ/cập nhật badge đúng");
     }
 }
