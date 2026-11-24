@@ -11,15 +11,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import vn.edu.softwaretesting.TestDelayExtension;
 import vn.edu.softwaretesting.core.WebTestBase;
 import vn.edu.softwaretesting.pages.InventoryPage;
 import vn.edu.softwaretesting.pages.LoginPage;
 
 @Tag("web")
 @DisplayName("FR-04: Product Sorting")
+@ExtendWith(TestDelayExtension.class)
 class SortTest extends WebTestBase {
 
     private InventoryPage inventoryPage;
