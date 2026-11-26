@@ -11,10 +11,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class LoginTest extends WebTestBase {
 
-    @ParameterizedTest(name = "TC-LOGIN-{index}: user={0}, accepted={2}")
+    @ParameterizedTest(name = "{0}: user={1}, accepted={3}")
     @CsvFileSource(resources = "/login-data.csv", numLinesToSkip = 1)
     @DisplayName("FR-01: Login Parameterized Test")
-    void loginShouldMatchExpectedOutcome(String username, String password, boolean expectedAccepted, String expectedEvidence) {
+    void loginShouldMatchExpectedOutcome(String tcId, String username, String password,
+                                         boolean expectedAccepted, String expectedEvidence) {
         // Xử lý giá trị rỗng từ CSV (nếu chuỗi rỗng thì chuyển thành "")
         String user = (username == null) ? "" : username;
         String pass = (password == null) ? "" : password;
