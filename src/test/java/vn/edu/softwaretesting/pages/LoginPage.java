@@ -40,9 +40,10 @@ public final class LoginPage {
         try {
             wait.until(ExpectedConditions.or(
                     ExpectedConditions.visibilityOfElementLocated(INVENTORY),
-                    ExpectedConditions.visibilityOfElementLocated(ERROR)));
+                    ExpectedConditions.visibilityOfElementLocated(ERROR)
+            ));
         } catch (TimeoutException exception) {
-            return new LoginResult(false, "No success or error state appeared within the timeout");
+            return new LoginResult(false, "Timeout waiting for state");
         }
 
         boolean accepted = !driver.findElements(INVENTORY).isEmpty();
